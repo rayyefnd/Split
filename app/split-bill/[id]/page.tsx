@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react"
 import BillCard from "@/components/ui/bill-card" //Item list for #[id] bill
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 interface Item {
     id: string
