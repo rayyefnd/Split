@@ -2,15 +2,31 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import { Loader2 } from "lucide-react"
 import BillCard from "@/components/ui/bill-card" //Item list for #[id] bill
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import { ConfirmDialog } from "@/components/ui/confirmation-dialog"
+
+import { 
+    ChevronLeft, 
+    Loader2, 
+    CircleAlert 
+} from "lucide-react"
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface Item {
     id: string
     name: string
+    originalPrice: number | null
     price: number
     quantity: number
 }
@@ -23,16 +39,22 @@ interface Participant {
 
 export default function BillDetails() {
     const params = useParams<{ id: string }>()
+    const router = useRouter()
     const billId = params.id
-
     const [title, setTitle] = useState("")
-    const [hostName, setHostName] = useState("Host")
     const [items, setItems] = useState<Item[]>([])
+    const [createdAt, setCreatedAt] = useState<string | null>(null)
     const [participants, setParticipants] = useState<Participant[]>([])
     const [loading, setLoading] = useState(true)
-    
-    const router = useRouter();
+    const [subtotal, setSubtotal] = useState<number | null>(null)
+    const [tax, setTax] = useState<number | null>(null)
+    const [serviceCharge, setServiceCharge] = useState<number | null>(null)
+    const [discount, setDiscount] = useState<number | null>(null)
+    const [dialogOpen, setDialogOpen] = useState(false)
+    const [cancelReceiptDialog, setCancelReceiptDialog] = useState(false)
+    const [submitting, setSubmitting] = useState(false)
 
+    // const [totalAmount, setTotalAmount] = useState<number | null>(null)
 
     //Helper
     useEffect(() => {
@@ -53,7 +75,11 @@ export default function BillDetails() {
                 console.error('Failed to fetch bill:', billError)
             } else if (bill) {
                 setTitle(bill.title)
-                setHostName(bill.host_name)
+                setCreatedAt(bill.created_at)
+                setSubtotal(bill.subtotal)
+                setTax(bill.tax)
+                setServiceCharge(bill.service_charge)
+                setDiscount(bill.discount)
             }
 
             const { data: itemsData, error: itemsError } = await supabase
@@ -90,20 +116,61 @@ export default function BillDetails() {
         fetchBillDetails()
     }, [billId])
 
-    
+    const itemsSubtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0) //Sebelum tax dan service charge
+    const totalAmount = (subtotal ?? itemsSubtotal) - (discount ?? 0) + (tax ?? 0) + (serviceCharge ?? 0) //Sesudah tax dan service charge
 
-    //Total Price
-    const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    //Handle Open Dialog
+    const handleOpenDialog = () => {
+        setDialogOpen(true)
+    }
+
+    //Handle Close Dialog
+    const handleCloseDialog = () => {
+        setDialogOpen(false)
+    }
+    
+    if(loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+            </div>
+        )
+    }
 
     return (
-        <div className="flex flex-col items-center justify-center gap-6 px-4 py-12">
+        <div className="flex flex-col items-center px-4 py-6">
             <div className="w-full max-w-sm flex flex-col gap-4">
                 <div className="flex items-center justify-between">
-                    <div>
-                        {/* HostName */}
-                        <p className="text-md text-black font-bold">{title}</p>
+                    <div className="flex flex-col w-full  max-w-sm text-center">
+                        <div className="relative flex items-center justify-center">
+                            <button
+                                type="button"
+                                onClick={() => setCancelReceiptDialog(true)}
+                                className="absolute left-0 flex items-center justify-center w-7 h-7 hover:bg-slate-100 rounded-lg"
+                            >
+                                <ChevronLeft className="h-5 w-5" />
+                            </button>
+
+                            <p className="text-lg text-black font-bold">{title}</p>
+                        </div>
+
+                        {/* Created At */}
+                        {createdAt && (
+                            <p className="flex justify-center gap-2 text-sm text-slate-400">
+                                <span>
+                                    {new Date(createdAt).toLocaleDateString('en-GB', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: '2-digit',
+                                    })}
+                                </span>
+                                
+                                <span>
+                                    ({new Date(createdAt).toLocaleTimeString('en-GB')})
+                                </span>
+                            </p>
+                        )}    
                     </div>
-                    {/* AddParticipant */}
                 </div>
 
                 <div className="border border-slate-100 rounded-sm px-4">
@@ -111,22 +178,66 @@ export default function BillDetails() {
                         <BillCard
                             key={item.id}
                             name={item.name}
+                            originalPrice={item.originalPrice}
                             price={item.price}
                             quantity={item.quantity}
                         />
                     ))}
                 </div>
 
-                <div className="flex justify-between text-sm mt-2">
-                    <span className="text-black text-md font-bold">Grand total:</span>
-                    <span className="font-semibold">{totalAmount.toLocaleString('id-ID')}</span>
+                <div className="flex flex-col text-sm mt-2 gap-2">
+
+                    {/* Subtotal */}
+                    <div className="flex justify-between text-slate-400">
+                        <span className="text-md">Subtotal:</span>
+                        <span>{(subtotal ?? itemsSubtotal).toLocaleString('id-ID')}</span>
+                    </div>
+
+                    {/* Service */}
+                    <div className="flex justify-between text-slate-400">
+                        <span className="text-md">Service Charge:</span>
+                        <span>{(serviceCharge ?? 0).toLocaleString('id-ID')}</span>
+                    </div>
+                    
+                    {/* Tax */}
+                    <div className="flex justify-between text-slate-400">
+                        <span className="text-md">Tax:</span>
+                        <span>{(tax ?? 0).toLocaleString('id-ID')}</span>
+                    </div>
+
+                    {/* Total Amount */}
+                    <div className="flex justify-between mt-1">
+                        <span className="text-black text-md font-bold">Total:</span>
+                        <span className="font-semibold">
+                            {totalAmount.toLocaleString('id-ID')}
+                        </span>
+                    </div>
+
                 </div>
-                
-                <Button
-                    onClick={() => router.push(`/`)}
-                >
-                    Add Participants
-                </Button>
+
+                <div className="flex mt-2">
+                    <Button
+                        className="flex-1"
+                        onClick={() => router.push(`/split-bill/${billId}/assign`)}
+                    >
+                        Confirm
+                    </Button>
+                </div>
+
+                <ConfirmDialog
+                    open={cancelReceiptDialog}
+                    onOpenChange={setCancelReceiptDialog}
+                    title={'Want to leave?'}
+                    description={`This receipt hasn't been saved and will be lost.`}
+                    icon={<CircleAlert className="h-6 w-6 text-red-600 bg-red" />}
+                    confirmLabel={submitting ? 'Cancelling...' : 'Confirm'}
+                    cancelLabel="Cancel"
+                    confirmVariant="destructive"
+                    onConfirm={() => {
+                        setCancelReceiptDialog(false)
+                        router.back()
+                    }}
+                />
 
             </div>
         </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { forwardRef } from "react"
+import { forwardRef, useState } from "react"
 import { extractedItems } from "@/app/actions/extract-bill"
 import { toast } from "sonner"
 
@@ -11,6 +11,9 @@ interface ReceiptScannerProps {
 
 const ReceiptScanner = forwardRef<HTMLInputElement, ReceiptScannerProps>(
   ({ billId, onExtracted }, ref) => {
+
+    const [loading, setLoading] = useState(false)
+
     async function handleFile(file: File) {
       const reader = new FileReader()
 
