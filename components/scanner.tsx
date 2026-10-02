@@ -3,6 +3,7 @@
 import { forwardRef, useState } from "react"
 import { extractedItems } from "@/app/actions/extract-bill"
 import { toast } from "sonner"
+import { Loader2 } from "lucide-react"
 
 interface ReceiptScannerProps {
   billId: string
@@ -12,43 +13,65 @@ interface ReceiptScannerProps {
 const ReceiptScanner = forwardRef<HTMLInputElement, ReceiptScannerProps>(
   ({ billId, onExtracted }, ref) => {
 
-    const [loading, setLoading] = useState(false)
+    const [extracting, setExtracting] = useState(false)
 
     async function handleFile(file: File) {
-      const reader = new FileReader()
+      setExtracting(true)
 
-      reader.onload = async () => {
-        const base64 = (reader.result as string).split(',')[1]
-        const toastId = toast.loading('Reading receipt...')
+      try {
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
 
-        try {
-          const items = await extractedItems(billId, base64, file.type)
-          toast.success(`Found ${items.length} items`, { id: toastId })
-          onExtracted?.()
-        } catch (err) {
-          console.error(err)
-          toast.error('Could not read receipt', { id: toastId })
-        }
+          reader.onload = () => {
+            const result = reader.result as string
+            resolve(result.split(",")[1])
+          }
+
+          reader.onerror = () => {
+            reject(new Error("Could not read file"))
+          }
+
+          reader.readAsDataURL(file)
+        })
+
+        const item = await extractedItems(
+          billId,
+          base64,
+          file.type
+        )
+
+        onExtracted?.()
+
+      } catch (err) {
+        console.error(err)
+        toast.error('Could not read receipt')
+      } finally {
+        setExtracting(false)
       }
-
-      reader.onerror = () => {
-        toast.error('Could not read the selected file')
-      }
-
-      reader.readAsDataURL(file)
     }
 
     return (
-      <input
-        ref={ref}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) handleFile(file)
-        }}
-      />
+      <>
+        <input
+          ref={ref}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) handleFile(file)
+          }}
+        />
+
+        {extracting && (
+          <div className="flex flex-col fixed inset-0 z-50 flex items-center justify-center bg-white gap-3">
+            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+            <p className="animate-pulse text-black">
+              Reading your receipt...
+            </p>
+          </div>
+        )}
+      </>
     )
   }
 )

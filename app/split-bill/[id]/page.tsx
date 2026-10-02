@@ -7,22 +7,13 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { ConfirmDialog } from "@/components/ui/confirmation-dialog"
+import PageLayout from "@/components/layout"
+import PageLoading from "@/app/loading"
 
 import { 
-    ChevronLeft, 
-    Loader2, 
     CircleAlert 
 } from "lucide-react"
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-
+ 
 interface Item {
     id: string
     name: string
@@ -34,7 +25,7 @@ interface Item {
 interface Participant {
     id:  string
     name: string
-    phoneNum: string
+    // phoneNum: string
 }
 
 export default function BillDetails() {
@@ -53,8 +44,6 @@ export default function BillDetails() {
     const [dialogOpen, setDialogOpen] = useState(false)
     const [cancelReceiptDialog, setCancelReceiptDialog] = useState(false)
     const [submitting, setSubmitting] = useState(false)
-
-    // const [totalAmount, setTotalAmount] = useState<number | null>(null)
 
     //Helper
     useEffect(() => {
@@ -131,115 +120,98 @@ export default function BillDetails() {
     
     if(loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
-            </div>
+            <PageLayout title="" onBack={() => router.back()}>
+                <PageLoading rows={4} showSummary showButton />
+            </PageLayout>
         )
     }
 
     return (
-        <div className="flex flex-col items-center px-4 py-6">
-            <div className="w-full max-w-sm flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex flex-col w-full  max-w-sm text-center">
-                        <div className="relative flex items-center justify-center">
-                            <button
-                                type="button"
-                                onClick={() => setCancelReceiptDialog(true)}
-                                className="absolute left-0 flex items-center justify-center w-7 h-7 hover:bg-slate-100 rounded-lg"
-                            >
-                                <ChevronLeft className="h-5 w-5" />
-                            </button>
+        <PageLayout
+            title={title}
+            onBack={() => setCancelReceiptDialog(true)}
+        >
+            {createdAt && (
+                <p className="flex justify-center gap-2 text-sm text-slate-400 -mt-2">
+                    <span>
+                        {new Date(createdAt).toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: '2-digit',
+                        })}
+                    </span>
 
-                            <p className="text-lg text-black font-bold">{title}</p>
-                        </div>
+                    <span>
+                        ({new Date(createdAt).toLocaleTimeString('en-GB')})
+                    </span>
+                </p>
+            )}
+            
+            <div className="border border-slate-100 rounded-sm px-4">
+                {items.map((item) => (
+                    <BillCard
+                        key={item.id}
+                        name={item.name}
+                        originalPrice={item.originalPrice}
+                        price={item.price}
+                        quantity={item.quantity}
+                    />
+                ))}
+            </div>
 
-                        {/* Created At */}
-                        {createdAt && (
-                            <p className="flex justify-center gap-2 text-sm text-slate-400">
-                                <span>
-                                    {new Date(createdAt).toLocaleDateString('en-GB', {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: '2-digit',
-                                    })}
-                                </span>
-                                
-                                <span>
-                                    ({new Date(createdAt).toLocaleTimeString('en-GB')})
-                                </span>
-                            </p>
-                        )}    
-                    </div>
+            <div className="flex flex-col text-sm mt-2 gap-2">
+
+                {/* Subtotal */}
+                <div className="flex justify-between text-slate-400">
+                    <span className="text-md">Subtotal:</span>
+                    <span>{(subtotal ?? itemsSubtotal).toLocaleString('id-ID')}</span>
                 </div>
 
-                <div className="border border-slate-100 rounded-sm px-4">
-                    {items.map((item) => (
-                        <BillCard
-                            key={item.id}
-                            name={item.name}
-                            originalPrice={item.originalPrice}
-                            price={item.price}
-                            quantity={item.quantity}
-                        />
-                    ))}
+                {/* Service */}
+                <div className="flex justify-between text-slate-400">
+                    <span className="text-md">Service Charge:</span>
+                    <span>{(serviceCharge ?? 0).toLocaleString('id-ID')}</span>
+                </div>
+                
+                {/* Tax */}
+                <div className="flex justify-between text-slate-400">
+                    <span className="text-md">Tax:</span>
+                    <span>{(tax ?? 0).toLocaleString('id-ID')}</span>
                 </div>
 
-                <div className="flex flex-col text-sm mt-2 gap-2">
-
-                    {/* Subtotal */}
-                    <div className="flex justify-between text-slate-400">
-                        <span className="text-md">Subtotal:</span>
-                        <span>{(subtotal ?? itemsSubtotal).toLocaleString('id-ID')}</span>
-                    </div>
-
-                    {/* Service */}
-                    <div className="flex justify-between text-slate-400">
-                        <span className="text-md">Service Charge:</span>
-                        <span>{(serviceCharge ?? 0).toLocaleString('id-ID')}</span>
-                    </div>
-                    
-                    {/* Tax */}
-                    <div className="flex justify-between text-slate-400">
-                        <span className="text-md">Tax:</span>
-                        <span>{(tax ?? 0).toLocaleString('id-ID')}</span>
-                    </div>
-
-                    {/* Total Amount */}
-                    <div className="flex justify-between mt-1">
-                        <span className="text-black text-md font-bold">Total:</span>
-                        <span className="font-semibold">
-                            {totalAmount.toLocaleString('id-ID')}
-                        </span>
-                    </div>
-
+                {/* Total Amount */}
+                <div className="flex justify-between mt-1">
+                    <span className="text-black text-md font-bold">Total:</span>
+                    <span className="font-semibold">
+                        {totalAmount.toLocaleString('id-ID')}
+                    </span>
                 </div>
-
-                <div className="flex mt-2">
-                    <Button
-                        className="flex-1"
-                        onClick={() => router.push(`/split-bill/${billId}/assign`)}
-                    >
-                        Confirm
-                    </Button>
-                </div>
-
-                <ConfirmDialog
-                    open={cancelReceiptDialog}
-                    onOpenChange={setCancelReceiptDialog}
-                    title={'Want to leave?'}
-                    description={`This receipt hasn't been saved and will be lost.`}
-                    icon={<CircleAlert className="h-6 w-6 text-red-600 bg-red" />}
-                    confirmLabel={submitting ? 'Cancelling...' : 'Confirm'}
-                    cancelLabel="Cancel"
-                    confirmVariant="destructive"
-                    onConfirm={() => {
-                        setCancelReceiptDialog(false)
-                        router.back()
-                    }}
-                />
 
             </div>
-        </div>
+
+            <div className="flex mt-2">
+                <Button
+                    className="flex-1"
+                    onClick={() => router.push(`/split-bill/${billId}/assign-participant`)}
+                >
+                    Confirm
+                </Button>
+            </div>
+
+            <ConfirmDialog
+                open={cancelReceiptDialog}
+                onOpenChange={setCancelReceiptDialog}
+                title={'Want to leave?'}
+                description={`This receipt hasn't been saved and will be lost.`}
+                icon={<CircleAlert className="h-6 w-6 text-black" />}
+                confirmLabel={submitting ? 'Cancelling...' : 'Confirm'}
+                cancelLabel="Cancel"
+                confirmVariant="default"
+                onConfirm={() => {
+                    setCancelReceiptDialog(false)
+                    router.back()
+                }}
+            />
+        </PageLayout>
     )
 }

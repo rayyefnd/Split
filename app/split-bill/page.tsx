@@ -3,22 +3,19 @@
 import { Button } from "@/components/ui/button";
 import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import CameraCapture from "@/components/camera-capture";
 import { createDraftBill } from "@/app/actions/bills";
 import ReceiptScanner from "@/components/scanner";
 import { toast } from "sonner";
+import PageLayout from "@/components/layout";
 
 //Icon
 import {
-  Camera,
-  ReceiptText,
   Upload,
-  ChevronLeft
+  ChevronRight
 } from 'lucide-react'
 
 export default function SplitBill() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [showCamera, setShowCamera] = useState(false);
   const [billId, setBillId] = useState<string | null>(null);
   const [creatingBill, setCreatingBill] = useState(false);
   const router = useRouter();
@@ -48,81 +45,57 @@ export default function SplitBill() {
     if (id) fileInputRef.current?.click();
   }
 
-  async function handleTakePhoto() {
-    const id = await ensureBillId();
-    if (id) setShowCamera(true);
-  }
-
   return (
-    <>
-    <div className="flex flex-col items-center justify-center gap-8 p-4 text-start">
-      
-      {/* Header */}
-      <div className="flex flex-col gap-2 w-full  max-w-sm text-center">
-        <div className="relative flex items-center justify-center">
-            <button
-                type="button"
-                onClick={() => router.back()}
-                className="absolute left-0 flex items-center justify-center w-7 h-7 hover:bg-slate-100 rounded-lg"
-            >
-                <ChevronLeft className="h-5 w-5" />
-            </button>
-
-            <h1 className="text-xl text-black font-bold">Split Bill</h1>
-        </div>    
-
-        <p className="text-sm text-slate-400">
-          Solve your split bill problems easily!
-        </p>    
-      </div>
-
+    <PageLayout
+      title="Split Bill"
+      onBack={() => router.back()}
+    >
       {/* Content */}
-      <div className="w-full max-w-sm flex flex-col gap-4">
-
-        {/* Upload Card */}
-        <div 
-            onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 p-6 flex flex-col items-center gap-2 cursor-pointer"
-        >
-            <ReceiptText  className="h-8 w-8 text-slate-400" />
-            <h2 className="text-sm text-slate-400">Drop file here, or <b>browse</b></h2>
-            {/* {billId && ( */}
-            <ReceiptScanner
-              ref={fileInputRef}
-              billId={billId ?? ''}
-              onExtracted={() => billId && router.push(`/split-bill/${billId}`)}
-            />
-            {/* )} */}
-
+      <div className="flex flex-col gap-4 mt-4 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <img 
+            src="icons/scan-bill.svg" 
+            alt="Phone Bill" 
+            width={80}
+            height={80}
+          />
+          <div className="flex flex-col w-[300]">
+            <h1 className="text-xl font-bold">Let's split the bill!</h1>
+            <p className="mx-auto text-sm text-slate-400">
+              Upload a receipt to get started, no manual calculating needed
+            </p>
+          </div>  
         </div>
 
         {/* Button */}
-        <div className="flex flex-row gap-4 justify-center mt-4">
-            <Button
-              variant="default"
-              className="w-full"
-              onClick={handleUploadFile}
-              disabled={creatingBill}
-            >
-              <Upload className="mr-2 h-4 w-4"/>
-              Upload File
-            </Button>
+        <div className="flex flex-col gap-4 justify-center">
+          <Button
+            variant="default"
+            className="w-full"
+            onClick={handleUploadFile}
+            disabled={creatingBill}
+          >
+            <Upload className="mr-2 h-4 w-4"/>
+            Upload file
+          </Button>
 
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={handleTakePhoto}
-              disabled={creatingBill}
+          <ReceiptScanner
+            ref={fileInputRef}
+            billId={billId ?? ''}
+            onExtracted={() => billId && router.push(`/split-bill/${billId}`)}
+          />
+
+          {/* <div className="flex flex-row justify-center">
+            <a
+              className="relative flex items-center text-slate-300 text-sm"
+              href="/tutorial"
             >
-              <Camera className="mr-2 h-4 w-4"/>
-              Take Photo
-            </Button>
+              See tutorial
+              <ChevronRight className="absolute -right-5 h-4 w-4" />
+            </a>
+          </div> */}
         </div>
       </div>
-
-      {showCamera && billId && <CameraCapture onClose={() => setShowCamera(false)}/>}
-
-    </div>
-    </>
-  );
+    </PageLayout>
+  )
 }
