@@ -6,13 +6,29 @@ import { useRouter } from "next/navigation";
 import { createDraftBill } from "@/app/actions/bills";
 import ReceiptScanner from "@/components/scanner";
 import { toast } from "sonner";
-import PageLayout from "@/components/layout";
+import { motion } from "framer-motion"
 
 //Icon
 import {
   Upload,
   ChevronRight
 } from 'lucide-react'
+
+//Motion
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+}
+
+const item = {
+  hidden: { opacity: 0, y: 0, x: 12 },
+  show: { opacity: 1, y: 0, x: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+}
 
 export default function SplitBill() {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -46,13 +62,22 @@ export default function SplitBill() {
   }
 
   return (
-    <PageLayout
-      title="Split Bill"
-      onBack={() => router.back()}
-    >
+    <motion.div 
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="flex flex-col w-full items-center px-4 py-6">
+
+      {/* Headline */}
+      <motion.div variants={item} className="flex text-center flex-col w-full max-w-sm">
+        <h1 className="text-3xl font-bold">Tired of</h1>
+        <h1 className="text-3xl font-bold text-slate-500">doing the math</h1>
+        <h1 className="text-3xl font-bold text-slate-400">on the table?</h1>
+      </motion.div>
+
       {/* Content */}
-      <div className="flex flex-col gap-4 mt-4 text-center">
-        <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col gap-4 mt-4 text-center w-full max-w-sm">
+        <motion.div variants={item} className="flex flex-col items-center gap-4">
           <img 
             src="icons/scan-bill.svg" 
             alt="Phone Bill" 
@@ -60,15 +85,15 @@ export default function SplitBill() {
             height={80}
           />
           <div className="flex flex-col w-[300]">
-            <h1 className="text-xl font-bold">Let's split the bill!</h1>
-            <p className="mx-auto text-sm text-slate-400">
+            <h1 className="text-2xl font-bold">Let's split the bill!</h1>
+            <p className="mx-auto text-md text-slate-400">
               Upload a receipt to get started, no manual calculating needed
             </p>
           </div>  
-        </div>
+        </motion.div>
 
         {/* Button */}
-        <div className="flex flex-col gap-4 justify-center">
+        <motion.div variants={item} className="flex flex-col gap-4 justify-center">
           <Button
             variant="default"
             className="w-full"
@@ -84,18 +109,8 @@ export default function SplitBill() {
             billId={billId ?? ''}
             onExtracted={() => billId && router.push(`/split-bill/${billId}`)}
           />
-
-          {/* <div className="flex flex-row justify-center">
-            <a
-              className="relative flex items-center text-slate-300 text-sm"
-              href="/tutorial"
-            >
-              See tutorial
-              <ChevronRight className="absolute -right-5 h-4 w-4" />
-            </a>
-          </div> */}
-        </div>
+        </motion.div>
       </div>
-    </PageLayout>
+    </motion.div>
   )
 }
