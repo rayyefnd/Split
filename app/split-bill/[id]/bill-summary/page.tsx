@@ -186,12 +186,12 @@ export default function BillSummary() {
                     return(
                         <div key={s.id} className="border border-slate-100 rounded-xl p-4 flex flex-col gap-2">
                             <div className="flex flex-row gap-2 items-center">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-lg font-semibold text-slate-700 shrink-0">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-lg font-semibold text-slate-700 shrink-0">
                                     {participant?.is_host ? <User className="h-5 w-5" /> : getInitials(s.name)}
                                 </div>
 
                                 <div className="flex flex-col">
-                                    <span className="text-xs font-bold">{s.name}</span>
+                                    <span className="text-sm font-bold">{s.name}</span>
                                     <span className="text-xs text-slate-400">
                                         {s.is_host ? 'Host' : 'Participant'}
                                     </span>
@@ -201,7 +201,7 @@ export default function BillSummary() {
                             {s.lineItems.length > 0 ? (
                                 <div className="flex flex-col gap-1 mt-2">
                                     {s.lineItems.map((li, i) => (
-                                    <div key={i} className="flex justify-between text-xs text-slate-400">
+                                    <div key={i} className="flex justify-between text-sm text-slate-400">
                                         <span className="truncate">{li.name}</span>
                                         <span className="shrink-0 ml-2">
                                             {Math.round(li.amount).toLocaleString('id-ID')}
@@ -217,25 +217,25 @@ export default function BillSummary() {
                             <hr className="border-slate-200 my-1" />
 
                             {(s.taxShare > 0 || s.serviceChargeShare > 0) && (
-                                <div className="flex flex-col">
+                                <div className="flex flex-col gap-1">
                                     {s.taxShare > 0 && (
-                                        <div className="flex justify-between text-xs text-slate-400">
-                                            <span>Tax</span>
+                                        <div className="flex justify-between text-sm text-slate-400">
+                                            <span>Tax:</span>
                                             <span>{Math.round(s.taxShare).toLocaleString('id-ID')}</span>
                                         </div>
                                     )}
 
                                     {s.serviceChargeShare > 0 && (
-                                    <div className="flex justify-between text-xs text-slate-400">
-                                        <span>Service charge</span>
+                                    <div className="flex justify-between text-sm text-slate-400">
+                                        <span>Service charge:</span>
                                         <span>{Math.round(s.serviceChargeShare).toLocaleString('id-ID')}</span>
                                     </div>
                                     )}
 
                                     {s.total > 0 && (
-                                        <div className="flex justify-between font-bold text-xs text-black">
-                                            <span>Total</span>
-                                            <span className="font-semibold text-xs">
+                                        <div className="flex justify-between font-bold text-sm text-black">
+                                            <span>Total:</span>
+                                            <span className="font-semibold text-sm">
                                                 {Math.round(s.total).toLocaleString('id-ID')}
                                             </span>
                                         </div>
@@ -258,13 +258,13 @@ export default function BillSummary() {
             <div className="border-b border-slate-200 mt-4"></div>
 
             <div className="flex justify-between items-center mt-2">
-                <span className="font-bold text-sm">Grand Total</span>
+                <span className="font-bold text-sm">Grand Total:</span>
                 <span className="font-bold text-sm">
                     {Math.round(grandTotal ?? 0).toLocaleString('id-ID')}
                 </span>
             </div>
 
-            <div className="mt-4">
+            <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-4 -mx-4">
                 <Button 
                     onClick={handleShare}
                     className="w-full"

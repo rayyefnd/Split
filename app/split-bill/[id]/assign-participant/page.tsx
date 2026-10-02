@@ -10,11 +10,8 @@ import { toast } from "sonner"
 
 // icon
 import { 
-    ArrowRight,
-    ChevronLeft, 
     Plus, 
     User, 
-    UserPlus,
     X
 } from "lucide-react"
 

@@ -16,7 +16,7 @@ export default function PageLayout({ title, subtitle, onBack, children }: PagePr
             <div className="w-full max-w-sm flex flex-col gap-4">
 
                 {/* Header */}
-                <div className="sticky top-0 z-40 bg-white pt-6 -mt-6 flex flex-col text-center">
+                <div className="sticky top-0 z-40 bg-white pt-5 -mt-6 flex flex-col text-center">
                     <div className="relative flex items-center justify-center">
                         <button
                         type="button"

@@ -192,11 +192,7 @@ export default function AssignItems() {
                 {items.map((item) => {
                     const assignedIds = assignments[item.id] ?? new Set()
                     const isActiveAssigned = activeParticipantId ? assignedIds.has(activeParticipantId) : false
-                    // const otherAssigned = participants.filter(
-                    //     (p) => assignedIds.has(p.id) && p.id !== activeParticipantId
-                    // )
                     const assignedParticipants = participants.filter((p) => assignedIds.has(p.id))
-
 
                     return (
                         <div
@@ -274,7 +270,7 @@ export default function AssignItems() {
                 })}
             </div>
 
-            <div className="mt-4">
+            <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-4 -mx-4">
                 <Button 
                     onClick={handleSave}
                     disabled={saving || items.some((item) => !assignments[item.id]?.size)}
@@ -286,7 +282,7 @@ export default function AssignItems() {
 
             <Dialog open={!!viewParticipants} onOpenChange={(open) => !open && setViewParticipants(null)}>
                 <DialogContent className="w-[90vw] max-w-sm">
-                    <DialogHeader className="flex justify-center mt-3">
+                    <DialogHeader className="flex justify-center">
                         <DialogTitle className="flex items-center flex-row gap-2">
                                 <div className="flex h-8 w-8 justify-center items-center rounded-full bg-slate-200 text-lg font-semibold text-slate-700">
                                     <Utensils className="w-4 h-4"/>

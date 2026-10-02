@@ -121,7 +121,7 @@ export default function BillDetails() {
     if(loading) {
         return (
             <PageLayout title="" onBack={() => router.back()}>
-                <PageLoading rows={4} showSummary showButton />
+                <PageLoading rows={4} showSummary={false} showButton />
             </PageLayout>
         )
     }
@@ -159,7 +159,7 @@ export default function BillDetails() {
                 ))}
             </div>
 
-            <div className="flex flex-col text-sm mt-2 gap-2">
+            <div className="flex flex-col text-sm mt-2 gap-1">
 
                 {/* Subtotal */}
                 <div className="flex justify-between text-slate-400">
@@ -189,7 +189,7 @@ export default function BillDetails() {
 
             </div>
 
-            <div className="flex mt-2">
+            <div className="flex sticky bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-4 -mx-4">
                 <Button
                     className="flex-1"
                     onClick={() => router.push(`/split-bill/${billId}/assign-participant`)}
