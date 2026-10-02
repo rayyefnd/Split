@@ -26,8 +26,8 @@ const container = {
 }
 
 const item = {
-  hidden: { opacity: 0, y: 0, x: 12 },
-  show: { opacity: 1, y: 0, x: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+  hidden: { opacity: 0, y: 12},
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
 }
 
 export default function SplitBill() {
@@ -70,9 +70,9 @@ export default function SplitBill() {
 
       {/* Headline */}
       <motion.div variants={item} className="flex text-center flex-col w-full max-w-sm">
-        <h1 className="text-3xl font-bold">Tired of</h1>
-        <h1 className="text-3xl font-bold text-slate-500">doing the math</h1>
-        <h1 className="text-3xl font-bold text-slate-400">on the table?</h1>
+        <h1 className="text-4xl font-bold">Tired of</h1>
+        <h1 className="text-4xl font-bold text-slate-500">doing the math</h1>
+        <h1 className="text-4xl font-bold text-slate-400">on the table?</h1>
       </motion.div>
 
       {/* Content */}
