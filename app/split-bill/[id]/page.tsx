@@ -25,7 +25,6 @@ interface Item {
 interface Participant {
     id:  string
     name: string
-    // phoneNum: string
 }
 
 export default function BillDetails() {
@@ -203,7 +202,7 @@ export default function BillDetails() {
                 onOpenChange={setCancelReceiptDialog}
                 title={'Want to leave?'}
                 description={`This receipt hasn't been saved and will be lost.`}
-                icon={<CircleAlert className="h-6 w-6 text-black" />}
+                icon={<CircleAlert className="h-6 w-6 text-primary" />}
                 confirmLabel={submitting ? 'Cancelling...' : 'Confirm'}
                 cancelLabel="Cancel"
                 confirmVariant="default"

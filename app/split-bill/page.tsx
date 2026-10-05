@@ -11,7 +11,6 @@ import { motion } from "framer-motion"
 //Icon
 import {
   Upload,
-  ChevronRight
 } from 'lucide-react'
 
 //Motion
@@ -99,8 +98,8 @@ export default function SplitBill() {
 
           <ReceiptScanner
             ref={fileInputRef}
-            billId={billId ?? ''}
-            onExtracted={() => billId && router.push(`/split-bill/${billId}`)}
+            ensureBillId={ensureBillId}
+            onExtracted={(billId) => router.push(`/split-bill/${billId}`)}
           />
         </motion.div>
       </div>

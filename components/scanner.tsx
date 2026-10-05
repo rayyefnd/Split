@@ -6,12 +6,12 @@ import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 
 interface ReceiptScannerProps {
-  billId: string
-  onExtracted?: () => void
+  ensureBillId: () => Promise<string | null>
+  onExtracted?: (billId: string) => void
 }
 
 const ReceiptScanner = forwardRef<HTMLInputElement, ReceiptScannerProps>(
-  ({ billId, onExtracted }, ref) => {
+  ({ ensureBillId, onExtracted }, ref) => {
 
     const [extracting, setExtracting] = useState(false)
 
@@ -19,6 +19,13 @@ const ReceiptScanner = forwardRef<HTMLInputElement, ReceiptScannerProps>(
       setExtracting(true)
 
       try {
+        const billId = await ensureBillId()
+
+        if(!billId) {
+          toast.error('Could not start a new bill')
+          return
+        }
+
         const base64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader()
 
@@ -40,7 +47,7 @@ const ReceiptScanner = forwardRef<HTMLInputElement, ReceiptScannerProps>(
           file.type
         )
 
-        onExtracted?.()
+        onExtracted?.(billId)
 
       } catch (err) {
         console.error(err)
@@ -65,7 +72,7 @@ const ReceiptScanner = forwardRef<HTMLInputElement, ReceiptScannerProps>(
 
         {extracting && (
           <div className="flex flex-col fixed inset-0 z-50 flex items-center justify-center bg-white gap-3">
-            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
             <p className="animate-pulse text-black">
               Reading your receipt...
             </p>
