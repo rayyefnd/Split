@@ -106,11 +106,20 @@ export default function AssignItems() {
     function itemToggle(itemId: string) {
         if(!activeParticipantId) return
 
+        const item = items.find((i) => i.id === itemId)
+        if(!item) return
+
         setAssignments((prev) => {
             const current = new Set(prev[itemId] ?? [])
-            if(current.has(activeParticipantId)) {
+            const currentlyAssigned = current.has(activeParticipantId)
+
+            if(currentlyAssigned) {
                 current.delete(activeParticipantId)
             } else {
+                if(current.size >= item.quantity) {
+                    toast.error(`Only ${item.quantity} ${item.quantity === 1 ? 'person' : 'people'} can claim this item`)
+                    return prev
+                }
                 current.add(activeParticipantId)
             }
             return { ...prev, [itemId]: current }
@@ -193,6 +202,7 @@ export default function AssignItems() {
                     const assignedIds = assignments[item.id] ?? new Set()
                     const isActiveAssigned = activeParticipantId ? assignedIds.has(activeParticipantId) : false
                     const assignedParticipants = participants.filter((p) => assignedIds.has(p.id))
+                    const isFull = assignedIds.size >= item.quantity && !isActiveAssigned
 
                     return (
                         <div
@@ -202,9 +212,13 @@ export default function AssignItems() {
                             onClick={() => itemToggle(item.id)}
                             onKeyDown={(e) => e.key === 'Enter' && itemToggle(item.id)}
                             className={`text-left p-3 border flex flex-col gap-1 transition-colors hover:bg-slate-100 ${
+                                isFull
+                                    ? 'border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed'
+                                    : 'hover:bg-slate-100 cursor-pointer'
+                            } $ {
                                 isActiveAssigned
-                                ? 'border-primary bg-primary/5'
-                                : 'border-slate-100 bg-white hover:border-slate-200'
+                                    ? 'border-primary bg-primary/5'
+                                    : 'border-slate-100 bg-white hover:border-slate-200'
                             }`}
                         >
                             <div className="flex items-center justify-between py-3 gap-3">

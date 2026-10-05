@@ -57,8 +57,7 @@ export default function SplitBill() {
   }
 
   async function handleUploadFile() {
-    const id = await ensureBillId();
-    if (id) fileInputRef.current?.click();
+    fileInputRef.current?.click()
   }
 
   return (
@@ -66,17 +65,10 @@ export default function SplitBill() {
       variants={container}
       initial="hidden"
       animate="show"
-      className="flex flex-col w-full items-center px-4 py-6">
-
-      {/* Headline */}
-      <motion.div variants={item} className="flex text-center flex-col w-full max-w-sm">
-        <h1 className="text-4xl font-bold">Tired of</h1>
-        <h1 className="text-4xl font-bold text-slate-500">doing the math</h1>
-        <h1 className="text-4xl font-bold text-slate-400">on the table?</h1>
-      </motion.div>
+      className="flex flex-col w-full min-h-screen justify-between px-4 py-6">
 
       {/* Content */}
-      <div className="flex flex-col gap-4 mt-4 text-center w-full max-w-sm">
+      <div className="flex flex-col items-center justify-center flex-1 gap-4 text-center w-full max-w-sm mx-auto">
         <motion.div variants={item} className="flex flex-col items-center gap-4">
           <img 
             src="icons/scan-bill.svg" 
@@ -84,16 +76,17 @@ export default function SplitBill() {
             width={80}
             height={80}
           />
-          <div className="flex flex-col w-[300]">
-            <h1 className="text-2xl font-bold">Let's split the bill!</h1>
+
+          <div className="flex flex-col w-full gap-2">
+            <h1 className="mx-auto text-3xl font-semibold w-[300]">Tired of doing math on the table?</h1>
             <p className="mx-auto text-md text-slate-400">
               Upload a receipt to get started, no manual calculating needed
             </p>
-          </div>  
+          </div> 
         </motion.div>
 
         {/* Button */}
-        <motion.div variants={item} className="flex flex-col gap-4 justify-center">
+        <motion.div variants={item} className="flex flex-col gap-4 justify-center w-full max-w-sm mx-auto">
           <Button
             variant="default"
             className="w-full"
