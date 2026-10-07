@@ -179,9 +179,9 @@ export default function AssignParticipants() {
                     <Button
                         variant="ghost"
                         onClick={handleOpenAddDialog}
-                        className="h-10 w-10 rounded-full border-2 border-dashed border-slate-300 p-0"
+                        className="h-10 w-10 rounded-full border-2 border-dashed border-primary p-0"
                     >
-                        <Plus className="text-slate-400 h-5 w-5" />
+                        <Plus className="text-primary h-5 w-5" />
                     </Button>
 
                     <span className="text-center text-xs text-slate-500">Add new</span>

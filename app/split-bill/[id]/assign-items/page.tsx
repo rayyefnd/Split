@@ -264,7 +264,7 @@ export default function AssignItems() {
                                                             participants: assignedParticipants,
                                                         })
                                                     }}
-                                                    className="flex text-[10px] bg-black justify-center text-white px-1.5 py-0.5 rounded-full hover:bg-black/80"
+                                                    className="flex text-[10px] bg-primary justify-center text-white px-1.5 py-0.5 rounded-full hover:bg-primary/80"
                                                 >
                                                     +{assignedParticipants.length - 2} more
                                                 </button>
@@ -288,7 +288,7 @@ export default function AssignItems() {
                     disabled={saving || items.some((item) => !assignments[item.id]?.size)}
                     className="w-full"
                 >
-                    {saving ? 'Saving..' : 'Confirm'}
+                    {saving ? 'Saving..' : 'Split now'}
                 </Button>
             </div>
 

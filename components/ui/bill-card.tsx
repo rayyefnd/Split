@@ -1,8 +1,19 @@
 'use client'
 
+//Icon
 import {
-    Plus,
+    EllipsisVertical,
+    Pencil,
+    Trash2,
 } from 'lucide-react'
+
+//Dropdown
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function BillCard({
     name,
@@ -10,12 +21,14 @@ export default function BillCard({
     originalPrice,
     quantity,
     onMenu,
+    onDelete,
 }: {
     name: string
     originalPrice: number | null
     price: number
     quantity: number
     onMenu?: () => void
+    onDelete?: () => void
 }) {
 
     const total = price * quantity
@@ -25,7 +38,7 @@ export default function BillCard({
 
     return (
         <div className="flex items-end justify-between py-3 border-b last:border-b-0">
-            <div className='min-w-0'>
+            <div className='min-w-0 flex-1'>
                 <h3 className="font-bold text-sm">{truncate(name)}</h3>
                 <p className="text-sm text-slate-400">
                     {hasDiscount && (
@@ -41,14 +54,37 @@ export default function BillCard({
                     {quantity > 1 && ` (x${quantity})`}
                 </p>
             </div>
+
+            <span className="text-sm text-slate-400">{total.toLocaleString('id-ID')}</span>
             
-            <div className="flex items-center gap-3">
-                <div className="text-right flex flex-col">
-                {/* <span className="text-sm text-slate-500 font-medium">Total: </span> */}
-                    <span className="text-sm text-slate-400">{total.toLocaleString('id-ID')}</span>
-                </div>
-                {/* <button className="text-slate-400" onClick={onMenu}><Plus className='mr-2 h-4 w-4'/></button> */}
-            </div>
+            {/* Dropdown */}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <button
+                        type="button"
+                        className='flex h-5 w-5 rounded-md items-center justify-center self-center hover:bg-slate-200 shrink-0 ml-2'
+                    >
+                        <EllipsisVertical className='w-4 h-4 text-slate-400'/>
+                    </button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end">
+                    {onMenu && (
+                        <DropdownMenuItem onClick={onMenu}>
+                            <Pencil className='mr-2 w-4 h-4'/>
+                            Edit
+                        </DropdownMenuItem>
+                    )}
+
+                    {onDelete && (
+                        <DropdownMenuItem onClick={onDelete}>
+                            <Trash2 className='mr-2 w-4 h-4'/>
+                            Delete
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+            
         </div>
     )
 }

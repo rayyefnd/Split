@@ -7,7 +7,11 @@ import { createClient } from "@/lib/supabase/client"
 import PageLayout from "@/components/layout"
 import PageLoading from "@/app/loading"
 import { Button } from "@/components/ui/button"
-import { Check, ChevronRight, Share2, User } from "lucide-react"
+
+import { 
+    User 
+} from "lucide-react"
+
 import { toast } from "sonner"
 
 interface Item {
@@ -73,7 +77,7 @@ export default function BillSummary() {
 
         const { data: bill } = await supabase
             .from('bills')
-            .select('tax, service_charge, discount, total_amount')
+            .select('subtotal,tax, service_charge, discount, total_amount')
             .eq('id', billId)
             .single()
 
@@ -98,7 +102,10 @@ export default function BillSummary() {
         const assignments: Assignment[] = assignmentsData || []
 
         const itemsSubtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+        const originalSubtotal = bill?.subtotal ?? 0 //Subtotal yang didapat dari extracted bill
         const tax = bill?.tax ?? 0
+        const taxRate = originalSubtotal > 0 ? tax / originalSubtotal : 0
+        const calculatedTax = itemsSubtotal * taxRate
         const serviceCharge = bill?.service_charge ?? 0
         const discount = bill?.discount ?? 0
 
@@ -137,7 +144,7 @@ export default function BillSummary() {
         setSummaries(result)
         setBillTax(tax)
         setbillServiceCharge(serviceCharge)
-        setGrandTotal(bill?.total_amount ?? itemsSubtotal + tax + serviceCharge)
+        setGrandTotal(itemsSubtotal - discount + calculatedTax + serviceCharge)
         setLoading(false)
     }
 
@@ -269,8 +276,7 @@ export default function BillSummary() {
                     onClick={handleShare}
                     className="w-full"
                 >
-                    {copied ? <Check className="mr-2 h-4 w-4"/> : <Share2 className="mr-2 w-4 h-4"/>}
-                    {copied ? 'Copied!' : 'Share summary'}
+                    Share summary
                 </Button>
             </div>
         </PageLayout>

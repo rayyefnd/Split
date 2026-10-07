@@ -71,3 +71,53 @@ export async function addParticipants(
     if (error) throw new Error(error.message)
     return data
 }
+
+//Add new item
+export async function addItem (
+    billId: string,
+    name: string,
+    price: number,
+    quantity: number
+) {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('items')
+        .insert({ bill_id: billId, name, price, quantity })
+        .select()
+        .single()
+    
+    if(error) throw new Error(error.message)
+    return data
+}
+
+//Edit Item
+export async function editItem(
+  itemId: string,
+  name: string,
+  price: number,
+  quantity: number,
+) {
+  const supabase = await createClient()
+  const {data, error} = await supabase
+    .from('items')
+    .update({ name, price, quantity })
+    .eq('id', itemId)
+    .select()
+    .single()
+  
+  if(error) throw new Error(error.message)
+  return data
+}
+
+//Delete item
+export async function deleteItem(itemId: string) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('items')
+    .delete()
+    .eq('id', itemId)
+  
+  if(error) throw new Error(error.message)
+}

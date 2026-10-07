@@ -132,7 +132,7 @@ export const ConfirmDialog = ({
 
         <DialogFooter className="flex flex-row gap-2">
           <Button
-            variant="outline"
+            variant="cancel"
             onClick={handleCancel}
             disabled={isLoading}
             className="flex-1"
