@@ -10,6 +10,7 @@ import { motion } from "framer-motion"
 
 //Icon
 import {
+  Info,
   Upload,
 } from 'lucide-react'
 
@@ -68,20 +69,20 @@ export default function SplitBill() {
 
       {/* Content */}
       <div className="flex flex-col items-center justify-center flex-1 gap-4 text-center w-full max-w-sm mx-auto">
-        <motion.div variants={item} className="flex flex-col items-center gap-4">
-          <img 
-            src="icons/scan-bill.svg" 
-            alt="Phone Bill" 
-            width={80}
-            height={80}
-          />
-
+        <motion.div variants={item} className="flex flex-col items-center gap-6">
           <div className="flex flex-col w-full gap-2">
             <h1 className="mx-auto text-3xl font-semibold w-[300]">Tired of doing math on the table?</h1>
             <p className="mx-auto text-md text-slate-400">
               Upload a receipt to get started, no manual calculating needed
             </p>
           </div> 
+          
+          <img 
+            src="icons/scan-bill.svg" 
+            alt="Phone Bill" 
+            width={80}
+            height={80}
+          />
         </motion.div>
 
         {/* Button */}
@@ -102,6 +103,11 @@ export default function SplitBill() {
             onExtracted={(billId) => router.push(`/split-bill/${billId}`)}
           />
         </motion.div>
+
+        <div className="flex items-center">
+          <Info className="mr-2 h-3 w-3 text-slate-400"/>
+          <p className="text-xs text-slate-400">Make sure the bill is clearly visible and not folded</p>
+        </div>
       </div>
     </motion.div>
   )
