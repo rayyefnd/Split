@@ -65,7 +65,7 @@ export default function SplitBill() {
       variants={container}
       initial="hidden"
       animate="show"
-      className="flex flex-col w-full min-h-screen justify-between px-4 py-6">
+      className="flex flex-col w-full min-h-dvh justify-between px-4 py-6">
 
       {/* Content */}
       <div className="flex flex-col items-center justify-center flex-1 gap-4 text-center w-full max-w-sm mx-auto">
