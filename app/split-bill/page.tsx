@@ -72,7 +72,7 @@ export default function SplitBill() {
         <motion.div variants={item} className="flex flex-col items-center gap-6">
           <div className="flex flex-col w-full gap-2">
             <h1 className="mx-auto text-3xl font-semibold w-[300]">Tired of doing math on the table?</h1>
-            <p className="mx-auto text-md text-slate-400">
+            <p className="mx-auto text-md text-slate-400 w-[300]">
               Upload a receipt to get started, no manual calculating needed
             </p>
           </div> 
@@ -104,10 +104,13 @@ export default function SplitBill() {
           />
         </motion.div>
 
-        <div className="flex items-center">
-          <Info className="mr-2 h-3 w-3 text-slate-400"/>
-          <p className="text-xs text-slate-400">Make sure the bill is clearly visible and not folded</p>
-        </div>
+        <motion.div variants={item} className="flex flex-col gap-4 justify-center w-full max-w-sm mx-auto">
+          <div className="flex items-center justify-center">
+            <Info className="mr-2 h-3 w-3 text-slate-400"/>
+            <p className="text-xs text-slate-400">Make sure the bill is clearly visible and not folded</p>
+          </div>
+        </motion.div>
+
       </div>
     </motion.div>
   )
