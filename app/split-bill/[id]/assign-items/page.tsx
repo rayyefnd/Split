@@ -2,13 +2,19 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { Check, ChevronRight, Hamburger, User, Utensils, UtensilsCrossed } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import PageLayout from "@/components/layout"
 import PageLoading from "@/app/loading"
 import { createClient } from "@/lib/supabase/client"
 import { setItemAssignments } from "@/app/actions/assignments"
 import { toast } from "sonner"
+
+//Icon
+import { 
+    Check, 
+    User, 
+    Utensils, 
+} from "lucide-react"
 
 //Dialog
 import {
@@ -104,20 +110,20 @@ export default function AssignItems() {
     function itemToggle(itemId: string) {
         if(!activeParticipantId) return
 
-        const item = items.find((i) => i.id === itemId)
-        if(!item) return
+        // const item = items.find((i) => i.id === itemId)
+        // if(!item) return
 
         setAssignments((prev) => {
             const current = new Set(prev[itemId] ?? [])
-            const currentlyAssigned = current.has(activeParticipantId)
+            // const currentlyAssigned = current.has(activeParticipantId)
 
-            if(currentlyAssigned) {
+            if(current.has(activeParticipantId)) {
                 current.delete(activeParticipantId)
             } else {
-                if(current.size >= item.quantity) {
-                    toast.error(`Only ${item.quantity} ${item.quantity === 1 ? 'person' : 'people'} can claim this item`)
-                    return prev
-                }
+                // if(current.size >= item.quantity) {
+                //     toast.error(`Only ${item.quantity} ${item.quantity === 1 ? 'person' : 'people'} can claim this item`)
+                //     return prev
+                // }
                 current.add(activeParticipantId)
             }
             return { ...prev, [itemId]: current }
@@ -195,7 +201,7 @@ export default function AssignItems() {
                 </p>
             )}
 
-            <div className="flex flex-col fap-2 mt-2">
+            <div className="flex flex-col mt-2">
                 {items.map((item) => {
                     const assignedIds = assignments[item.id] ?? new Set()
                     const isActiveAssigned = activeParticipantId ? assignedIds.has(activeParticipantId) : false
@@ -210,10 +216,6 @@ export default function AssignItems() {
                             onClick={() => itemToggle(item.id)}
                             onKeyDown={(e) => e.key === 'Enter' && itemToggle(item.id)}
                             className={`text-left p-3 border flex flex-col gap-1 transition-colors hover:bg-slate-100 ${
-                                isFull
-                                    ? 'border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed'
-                                    : 'hover:bg-slate-100 cursor-pointer'
-                            } $ {
                                 isActiveAssigned
                                     ? 'border-primary bg-primary/5'
                                     : 'border-slate-100 bg-white hover:border-slate-200'

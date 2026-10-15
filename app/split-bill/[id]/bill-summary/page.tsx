@@ -109,13 +109,18 @@ export default function BillSummary() {
         const serviceCharge = bill?.service_charge ?? 0
         const discount = bill?.discount ?? 0
 
+        const assigneeCount: Record<string, number> = {}
+        for (const a of assignments) {
+            assigneeCount[a.item_id] = (assigneeCount[a.item_id] ?? 0) + 1 
+        }
+
         const result: ParticipantSummary[] = participants.map((p) => {
             const myAssignments = assignments.filter((a) => a.participant_id === p.id)
 
             const lineItems = myAssignments.map((a) => {
                 const item = items.find((i) => i.id === a.item_id)
                 if(!item) return null
-                const amount = item.price * item.quantity * a.share
+                const amount = (item.price * item.quantity) / assigneeCount[a.item_id]
                 return { name: item.name, amount }
             }).filter((x): x is { name: string; amount: number } => x !== null)
 

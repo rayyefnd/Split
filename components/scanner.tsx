@@ -35,6 +35,11 @@ const ReceiptScanner = forwardRef<HTMLInputElement, ReceiptScannerProps>(
           }
 
           reader.onerror = () => {
+            console.error('FileReader failed:', reader.error?.name, reader?.error?.message, {
+              size: file.size,
+              type: file.type,
+              ua: navigator.userAgent
+            })
             reject(new Error("Could not read file"))
           }
 
