@@ -290,7 +290,7 @@ export default function AssignItems() {
                     disabled={saving || items.some((item) => !assignments[item.id]?.size)}
                     className="w-full"
                 >
-                    {saving ? 'Saving..' : 'Split now'}
+                    {saving ? 'Saving...' : 'Split now'}
                 </Button>
             </div>
 

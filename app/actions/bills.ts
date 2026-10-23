@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from "@/lib/supabase/server";
+import { number } from "zod";
 
 //Draft bill
 export async function createDraftBill() {
@@ -120,4 +121,48 @@ export async function deleteItem(itemId: string) {
     .eq('id', itemId)
   
   if(error) throw new Error(error.message)
+}
+
+//Update bill charges
+interface Charges {
+  tax: number
+  service_charge: number
+  discount: number
+}
+
+export async function updateCharges(billId: string, charges: Charges) {
+  for (const v of Object.values(charges)) {
+
+    if(!Number.isFinite(v) || v < 0) {
+      throw new Error('Amounts must be zero or more')
+    }
+
+    const supabase = await createClient()
+
+    const { data: items, error: itemsError } = await supabase
+      .from('items')
+      .select('price, quantity')
+      .eq('bill_id', billId)
+
+    if(itemsError) throw new Error(itemsError.message)
+
+      const subtotal = (items ?? []).reduce((s, i) => s + i.price * i.quantity, 0)
+      const total = subtotal + charges.tax + charges.service_charge - charges.discount
+      if (total < 0) throw new Error('Discount is larger than the bill')
+
+    const { error } = await supabase
+      .from('bills')
+      .update({
+        subtotal,
+        tax: charges.tax,
+        service_charge: charges.service_charge,
+        discount: charges.discount,
+        total_amount: total,
+      })
+      .eq('id', billId)
+    
+    if(error) throw new Error(error.message)
+
+    return { subtotal, total }
+  }
 }

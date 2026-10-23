@@ -16,6 +16,7 @@ import {z} from "zod"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { editItem } from "@/app/actions/bills"
+import { updateCharges } from "@/app/actions/bills"
 
 import { 
     CircleAlert, 
@@ -85,6 +86,10 @@ export default function BillDetails() {
     const [confirmDelete, setConfirmDelete] = useState(false)
     const [itemToDelete, setItemToDelete] = useState<Item | null>(null)
     const [editingItem, setEditingItem] = useState<Item | null>(null)
+    const [openChargesDialog, setOpenChargesDialog] = useState(false)
+    const [taxInput, setTaxInput] = useState("")
+    const [serviceInput, setServiceInput] = useState("")
+    const [savingCharges, setSavingCharges] = useState(false)
 
     const form = useForm<AddItemInput, any, AddItemOutput>({
         resolver: zodResolver(addItemSchema),
@@ -234,7 +239,6 @@ export default function BillDetails() {
             quantity: item.quantity
         })
         setOpenAddDialog(true)
-
     }
 
     //Handle delete confirmation
@@ -255,6 +259,45 @@ export default function BillDetails() {
             console.error(err)
             setItems(previousItems)
             toast.error("Could not remove item")
+        }
+    }
+
+    //Handle open edit bill charges dialog
+    function openChargesEditor() {
+        setTaxInput(String(Math.round(calculatedTax)))
+        setServiceInput(String(serviceCharge ?? 0))
+        setOpenChargesDialog(true)
+    }
+
+    //Handle save edit bill charges
+    async function handleSaveCharges() {
+        const newTax = Number(taxInput || 0)
+        const newService = Number(serviceInput || 0)
+
+        if (!Number.isFinite(newTax) || !Number.isFinite(newService) || newTax < 0 || newService < 0) {
+            toast.error("Amount must be 0 or more")
+            return
+        }
+
+        setSavingCharges(true)
+
+        try {
+            const result = await updateCharges(billId, {
+                tax: newTax,
+                service_charge: newService,
+                discount: discount ?? 0,
+            })
+
+            setTax(newTax)
+            setServiceCharge(newService)
+            setSubtotal(itemsSubtotal)
+            setOpenChargesDialog(false)
+            toast.success("Charges updated")
+        } catch(err) {
+            console.error(err)
+            toast.error("Could not update charges")
+        } finally {
+            setSavingCharges(false)
         }
     }
 
@@ -344,7 +387,15 @@ export default function BillDetails() {
 
             </div>
 
-            <div className="flex sticky bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-4 -mx-4">
+            <div className="flex sticky bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-4 -mx-4 gap-3">
+                <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={openChargesEditor}
+                >
+                    Edit bill
+                </Button>
+
                 <Button
                     className="flex-1"
                     onClick={() => router.push(`/split-bill/${billId}/assign-participant`)}
@@ -352,6 +403,67 @@ export default function BillDetails() {
                     Confirm
                 </Button>
             </div>
+
+            {/* Bills charge edit form */}
+            <Dialog open={openChargesDialog} onOpenChange={setOpenChargesDialog}>
+                <DialogContent className="w-[90vw] max-w-sm">
+                    <DialogTitle>Edit bill charges</DialogTitle>
+                    <DialogDescription>
+                        Correct the service charge and tax if the scan misread them.
+                    </DialogDescription>
+
+                    <div className="grid gap-3 p-2">
+                        <div className="grid gap-1">
+                            <label htmlFor="service-charge" className="text-sm font-medium">
+                                Service charge
+                            </label>
+                            <Input
+                                id="service-charge"
+                                type="number"
+                                inputMode="numeric"
+                                min={0}
+                                value={serviceInput}
+                                onChange={(e) => setServiceInput(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="grid gap-1">
+                            <label htmlFor="tax" className="text-sm font-medium">
+                                Tax (PB1 / PPN)
+                            </label>
+                            <Input
+                                id="tax"
+                                type="number"
+                                inputMode="numeric"
+                                min={0}
+                                value={taxInput}
+                                onChange={(e) => setTaxInput(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="flex justify-between text-sm mt-1">
+                            <span className="text-slate-400">New total</span>
+                            <span className="font-semibold">
+                                {(
+                                    itemsSubtotal -
+                                    (discount ?? 0) +
+                                    Number(taxInput || 0) +
+                                    Number(serviceInput || 0)
+                                ).toLocaleString('id-ID')}
+                            </span>
+                        </div>
+
+                        <Button
+                            className="w-full mt-2"
+                            onClick={handleSaveCharges}
+                            disabled={savingCharges}
+                        >
+                            {savingCharges ? "Saving..." : "Save"}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
 
             {/* Cancel Receipt */}
             <ConfirmDialog
@@ -391,12 +503,14 @@ export default function BillDetails() {
                     <DialogTitle>
                         {editingItem ? 'Edit item' : 'Add item'}
                     </DialogTitle>
+
                     <DialogDescription>
                         {editingItem
                             ? 'Update the item information below.'
                             : 'Manually add an item to this bill.'
                         }
                     </DialogDescription>
+
                     <Form
                         onSubmit={form.handleSubmit(onSubmit)}
                         className="grid grid-cols-1 md:grid gap-3 p-2"
@@ -425,6 +539,8 @@ export default function BillDetails() {
                                         <FormControl>
                                             <Input 
                                                 type="number" 
+                                                inputMode="numeric"
+                                                min={0}
                                                 placeholder="25000" {...field} 
                                                 value={field.value as string | number}/>
                                         </FormControl>
@@ -442,6 +558,8 @@ export default function BillDetails() {
                                         <FormControl>
                                             <Input 
                                                 type="number" 
+                                                inputMode="numeric"
+                                                min={0}
                                                 placeholder="1" 
                                                 {...field} 
                                                 value={field.value as string | number}/>

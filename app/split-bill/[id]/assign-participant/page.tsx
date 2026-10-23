@@ -39,6 +39,41 @@ const getInitials = (username: string) =>
         .map((word) => word[0]?.toUpperCase() ?? '')
         .join('')
 
+//Ambil data host atau buat baru
+async function getOrCreateHost(
+    supabase: Awaited<ReturnType<typeof createClient>>,
+    billId: string
+) {
+    const find = () =>
+        supabase
+            .from('participants')
+            .select()
+            .eq('bill_id', billId)
+            .eq('is_host', true)
+            .limit(1)
+            .maybeSingle()
+    
+    const { data: existing, error: findError } = await find()
+    if (findError) throw new Error (findError.message)
+    if (existing) return existing
+
+    const { data, error } = await supabase
+        .from('participants')
+        .insert({ bill_id: billId, name: 'You', is_host: true })
+        .select()
+        .single()
+
+    // 23505 = the unique index (step 3 below) rejected a second host created at the same moment
+    if (error?.code === '23505') {
+        const { data: again, error: againError } = await find()
+        if (againError || !again) throw new Error(againError?.message ?? 'Host not found')
+        return again
+    }
+    if (error) throw new Error(error.message)
+
+    return data
+}
+
 export default function AssignParticipants() {
     const router = useRouter()
     const [openDialog, setOpenDialog] = useState(false)
@@ -56,10 +91,17 @@ export default function AssignParticipants() {
             setLoading(true)
             const supabase = createClient()
 
+            try {
+                await getOrCreateHost(supabase, billId)
+            } catch (err) {
+                console.error('Failed to ensure host participants:', err)
+            }
+
             const { data, error } = await supabase
                 .from('participants')
                 .select('id, name, is_host')
                 .eq('bill_id', billId)
+                .order('created_at')
 
             if(error) {
                 console.error('Failed to fetch participants:', error)
@@ -67,25 +109,30 @@ export default function AssignParticipants() {
                 return
             }
 
-            const hasHost = (data || []).some((p) => p.is_host)
+            // const hasHost = (data || []).some((p) => p.is_host)
 
-            if(!hasHost) {
-                const { data: hostRow, error: hostError } = await supabase
-                    .from('participants')
-                    .insert({ bill_id: billId, name: 'You', is_host: true })
-                    .select()
-                    .single()
+            // if(!hasHost) {
+            //     const { data: hostRow, error: hostError } = await supabase
+            //         .from('participants')
+            //         .insert({ bill_id: billId, name: 'You', is_host: true })
+            //         .select()
+            //         .single()
 
-                if (hostError) {
-                    console.error('Failed to create host participant:', hostError)
-                    setParticipants(data || [])
-                } else {
-                    setParticipants([hostRow, ...(data || [])])
-                }
-            } else {
-                setParticipants(data || [])
-            }
+            //     if (hostError) {
+            //         console.error('Failed to create host participant:', hostError)
+            //         setParticipants(data || [])
+            //     } else {
+            //         setParticipants([hostRow, ...(data || [])])
+            //     }
+            // } else {
+            //     setParticipants(data || [])
+            // }
 
+            const sorted = [...(data ?? [])].sort(
+                (a, b) => Number(b.is_host) - Number(a.is_host)
+            )
+
+            setParticipants(sorted)
             setLoading(false)
         }
 
