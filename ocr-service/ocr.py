@@ -4,7 +4,7 @@ import pytesseract
 
 from bill_parser import parse_bill, validate, to_dict
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 LANG = "eng"
 
